@@ -7,6 +7,6 @@ services:
     startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 api_server:app
     envVars:
       - key: GEMINI_MODEL
-        value: gemini-2.5-flash
+        value: gemini-flash-latest
       - key: GEMINI_API_KEY
         sync: false
