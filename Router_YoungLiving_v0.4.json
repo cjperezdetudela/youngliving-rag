@@ -1,0 +1,88 @@
+{
+  "router_version": "v0.4",
+  "system_name": "YoungLiving_RAG_Vademecum_Router",
+  "description": "Enrutador semántico y clasificador de intenciones para el ecosistema de conocimiento Young Living Vademecum.",
+  "default_fallback_intent": "SAFETY_FALLBACK",
+  "confidence_thresholds": {
+    "high_confidence": 0.85,
+    "medium_confidence": 0.65,
+    "low_confidence_fallback": 0.45
+  },
+  "intents": {
+    "VADEMECUM_STRUCT": {
+      "intent_name": "VADEMECUM_STRUCT",
+      "description": "Consultas sobre fichas técnicas estructuradas, dosis exactas, modos de empleo, precauciones y usos autorizados de todo el catálogo.",
+      "primary_data_source": "Vademecum_YL_v0.4_Completo_ES_CA.xlsx",
+      "retrieval_strategy": "structured_filter",
+      "priority": 1,
+      "keywords": [
+        "dosis", "modo de empleo", "modo de uso", "ficha técnica", "precauciones", "cómo aplicar", "com aplicar",
+        "utilitzar", "barreja", "difusor gotas", "difusor", "dilución", "diluir", "v-6", "v6", "ingredientes",
+        "instrucciones", "uso tópico", "ús tòpic", "pieles sensibles", "fotosensibilidad"
+      ]
+    },
+    "CORPUS_RAG": {
+      "intent_name": "CORPUS_RAG",
+      "description": "Preguntas sobre propiedades aromáticas, beneficios emocionales, composiciones botánicas y explicaciones conceptuales del corpus general de aceites.",
+      "primary_data_source": "Conocimientos_YoungLiving_RAG_v0.4.jsonl",
+      "retrieval_strategy": "dense_vector_search",
+      "priority": 2,
+      "keywords": [
+        "propiedades", "propietats", "beneficios", "beneficis", "emocional", "aromaterapia",
+        "origen botánico", "efectos", "relajación", "bienestar", "concentración", "mental",
+        "calmants", "tranquilidad", "tranquil·litat", "historia", "tradición", "fórmula",
+        "terpenos", "atmósfera", "sensación"
+      ]
+    },
+    "CATALOG_SEARCH": {
+      "intent_name": "CATALOG_SEARCH",
+      "description": "Búsquedas de catálogo, verificación de referencias, existencias de formatos, nombres en español/catalán y categorías de aceites.",
+      "primary_data_source": "bbdd_youngliving_catalogo_v0.4.csv",
+      "retrieval_strategy": "hybrid_search",
+      "priority": 3,
+      "keywords": [
+        "catálogo", "catàleg", "formato", "formatos", "5ml", "15ml", "precio", "disponibilidad",
+        "nombre botánico", "nom botànic", "línea comercial", "línea de producto", "sku",
+        "roll-ons", "roll-on", "referencia", "inventario", "filtra", "lista de aceites"
+      ]
+    },
+    "BLOG_POSTS": {
+      "intent_name": "BLOG_POSTS",
+      "description": "Recetas DIY, mezclas para el hogar, consejos de estilo de vida, artículos de blog y guías temáticas estacionales.",
+      "primary_data_source": "youngliving_posts_full.csv",
+      "retrieval_strategy": "hybrid_search",
+      "priority": 4,
+      "keywords": [
+        "receta", "recepta", "diy", "mezcla para hogar", "mezclas para el hogar", "mezclas", "hogar",
+        "limpieza natural", "cuina", "blog", "rutina", "consejos", "recomanacions", 
+        "verano", "invierno", "exfoliante", "manualidades", "spritz"
+      ]
+    },
+    "SAFETY_FALLBACK": {
+      "intent_name": "SAFETY_FALLBACK",
+      "description": "Consultas relativas a contraindicaciones médicas, uso en embarazadas/bebés, ingesta de aceites no aptos o reacciones alérgicas.",
+      "primary_data_source": "Parche_prompt_router_YoungLiving_v0.3.txt",
+      "retrieval_strategy": "rule_based_fallback",
+      "priority": 0,
+      "keywords": [
+        "embarazo", "embarazada", "bebé", "bebe", "recién nacido", "niños menores",
+        "ingerir", "tomar por boca", "alergia", "toxicidad", "ojo", "ojos", "irritación"
+      ]
+    }
+  },
+  "query_preprocessing": {
+    "lowercase": true,
+    "strip_punctuation": true,
+    "language_support": ["es", "ca"],
+    "synonym_mapping": {
+      "lavanda": ["lavandula angustifolia", "espigol", "espígol"],
+      "limon": ["limón", "llimó", "llimona", "citrus limon"],
+      "menta": ["mentha piperita", "peppermint"],
+      "incienso": ["frankincense", "boswellia carterii"],
+      "thieves": ["ladrones", "barreja thieves", "mezcla thieves"],
+      "arbol de te": ["tea tree", "melaleuca"],
+      "naranja": ["orange", "taronja"],
+      "romero": ["rosemary", "romaní"]
+    }
+  }
+}

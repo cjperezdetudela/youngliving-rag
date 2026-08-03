@@ -1,0 +1,11 @@
+{
+  "source": "Young Living Blog EU ES",
+  "started_from": "https://www.youngliving.com/blog/eu/es/",
+  "total_seed_urls": 72,
+  "posts_ok": 72,
+  "posts_error": 0,
+  "chunks_total": 180,
+  "total_words": 59135,
+  "errors": [],
+  "generated_at": "2026-05-18T19:59:53.800Z"
+}

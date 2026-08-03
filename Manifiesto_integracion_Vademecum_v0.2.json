@@ -1,0 +1,75 @@
+{
+  "manifest_version": "v0.2",
+  "project_name": "YoungLiving_Vademecum_RAG_Pipeline",
+  "created_at": "2026-07-23",
+  "components": [
+    {
+      "priority": 1,
+      "file_name": "Vademecum_YL_v0.2_5_productos_ES_CA.xlsx",
+      "type": "STRUCTURED_GROUND_TRUTH",
+      "format": "xlsx",
+      "language": ["es", "ca"],
+      "schema": {
+        "columns": ["Producto", "Nombre_Botanico", "Dosis_Difusor", "Dilucion_V6", "Precauciones", "Modo_Empleo"]
+      }
+    },
+    {
+      "priority": 2,
+      "file_name": "Conocimientos_YoungLiving_RAG_v0.2.jsonl",
+      "type": "COMBINED_RAG_CORPUS",
+      "format": "jsonl",
+      "schema": {
+        "fields": ["doc_id", "title", "content", "category", "embedding_vector"]
+      }
+    },
+    {
+      "priority": 3,
+      "file_name": "Router_YoungLiving_v0.3.json",
+      "type": "ROUTER_CONFIG",
+      "format": "json"
+    },
+    {
+      "priority": 4,
+      "file_name": "Parche_prompt_router_YoungLiving_v0.3.txt",
+      "type": "PROMPT_RULES_PATCH",
+      "format": "txt"
+    },
+    {
+      "priority": 5,
+      "file_name": "Bateria_pruebas_YoungLiving_v0.2.jsonl",
+      "type": "TEST_BATTERY",
+      "format": "jsonl",
+      "total_cases": 30
+    },
+    {
+      "priority": 6,
+      "file_name": "Validacion_funcional_YoungLiving_v0.2_30_pruebas.xlsx",
+      "type": "VALIDATION_REPORT",
+      "format": "xlsx"
+    },
+    {
+      "priority": 7,
+      "file_name": "Manifiesto_integracion_Vademecum_v0.2.json",
+      "type": "INTEGRATION_MANIFEST",
+      "format": "json"
+    },
+    {
+      "priority": 8,
+      "file_name": "bbdd_youngliving_todos_los_aceites(1).csv",
+      "type": "COMMERCIAL_CATALOG",
+      "format": "csv"
+    },
+    {
+      "priority": 9,
+      "file_name": "youngliving_posts_full.csv",
+      "type": "BLOG_CONTENT",
+      "format": "csv"
+    },
+    {
+      "priority": 10,
+      "file_name": "Vademecum entero.pdf",
+      "type": "VISUAL_HISTORICAL_BACKUP",
+      "format": "pdf"
+    }
+  ]
+}
