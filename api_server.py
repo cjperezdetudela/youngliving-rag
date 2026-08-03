@@ -13,24 +13,35 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
-pipeline = YoungLivingRAGPipeline(base_dir)
+_pipeline = None
+_gemini_generator = None
 
-# Initialize Gemini Generator
-preferred_model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
-gemini_generator = GeminiAdvisorGenerator(preferred_model=preferred_model)
+def get_pipeline():
+    global _pipeline
+    if _pipeline is None:
+        _pipeline = YoungLivingRAGPipeline(base_dir)
+    return _pipeline
+
+def get_generator():
+    global _gemini_generator
+    if _gemini_generator is None:
+        preferred_model = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
+        _gemini_generator = GeminiAdvisorGenerator(preferred_model=preferred_model)
+    return _gemini_generator
 
 
 def extract_matched_products(docs):
     products = []
     seen = set()
-    if pipeline.loader.vademecum_df.empty:
+    pipeline_obj = get_pipeline()
+    if pipeline_obj.loader.vademecum_df.empty:
         return products
 
     for doc in docs:
         title = doc.get("title", "")
         content = doc.get("content", "")
 
-        for _, row in pipeline.loader.vademecum_df.iterrows():
+        for _, row in pipeline_obj.loader.vademecum_df.iterrows():
             prod_name = str(row.get('Producto', ''))
             clean_name = prod_name.split('(')[0].strip()
 
@@ -57,10 +68,13 @@ def chat():
         return jsonify({"error": "No query provided"}), 400
 
     # 1. Execute RAG Retrieval & Reranking Pipeline
-    pipeline_output = pipeline.execute(query, top_k=3)
+    pipeline_obj = get_pipeline()
+    generator_obj = get_generator()
+
+    pipeline_output = pipeline_obj.execute(query, top_k=3)
 
     # 2. Generate response using Gemini LLM (with contextual RAG & conversation history)
-    response_payload = gemini_generator.generate(pipeline_output, history=history)
+    response_payload = generator_obj.generate(pipeline_output, history=history)
 
     # 3. Attach matched structured product cards for interactive UI
     docs = pipeline_output.get("documents", [])
@@ -71,9 +85,10 @@ def chat():
 
 @app.route('/api/catalog', methods=['GET'])
 def get_catalog():
+    pipeline_obj = get_pipeline()
     items = []
-    if not pipeline.loader.vademecum_df.empty:
-        for _, row in pipeline.loader.vademecum_df.iterrows():
+    if not pipeline_obj.loader.vademecum_df.empty:
+        for _, row in pipeline_obj.loader.vademecum_df.iterrows():
             items.append({
                 "type": "PRODUCT",
                 "producto": str(row.get('Producto', '')),
@@ -85,8 +100,8 @@ def get_catalog():
             })
 
     articles = []
-    if not pipeline.loader.blog_posts_df.empty:
-        for _, row in pipeline.loader.blog_posts_df.iterrows():
+    if not pipeline_obj.loader.blog_posts_df.empty:
+        for _, row in pipeline_obj.loader.blog_posts_df.iterrows():
             articles.append({
                 "type": "ARTICLE",
                 "source": "Young Living Blog",
@@ -100,8 +115,8 @@ def get_catalog():
                 "fullText": str(row.get('full_text', ''))
             })
 
-    if not pipeline.loader.essenciales_posts_df.empty:
-        for _, row in pipeline.loader.essenciales_posts_df.iterrows():
+    if not pipeline_obj.loader.essenciales_posts_df.empty:
+        for _, row in pipeline_obj.loader.essenciales_posts_df.iterrows():
             articles.append({
                 "type": "ARTICLE",
                 "source": "Essenciales Blog",
@@ -126,11 +141,12 @@ def get_catalog():
 
 @app.route('/api/status', methods=['GET'])
 def status():
+    gen_obj = get_generator()
     return jsonify({
         "status": "online",
         "version": "Asesor de Bienestar 1.0",
-        "gemini_active": gemini_generator.client is not None,
-        "model_primary": gemini_generator.preferred_model
+        "gemini_active": gen_obj.client is not None,
+        "model_primary": gen_obj.preferred_model
     })
 
 
