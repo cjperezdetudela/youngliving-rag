@@ -89,6 +89,9 @@ function App() {
     setInputValue('');
     setIsLoading(true);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
@@ -98,8 +101,11 @@ function App() {
         body: JSON.stringify({
           query: textToSend,
           history: messages.map((m) => ({ role: m.role, text: m.text }))
-        })
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -120,15 +126,19 @@ function App() {
         }
       ]);
     } catch (error) {
+      clearTimeout(timeoutId);
       console.error('API Error:', error);
 
-      // Provide informative assistant guidance if the API server is offline / not yet deployed
+      const errorMsg = error.name === 'AbortError'
+        ? `⚠️ **El servidor backend en Render está tardando en despertar (Free Tier)**\n\nEl servicio en Render.com suspende su servidor tras 15 min de inactividad. Por favor, reintenta en unos segundos mientras termina de iniciar.`
+        : `⚠️ **Servidor API no disponible temporalmente**\n\nNo se ha podido conectar con el backend (${API_BASE_URL}). Si ejecutas la app localmente, comprueba que \`python api_server.py\` esté activo.`;
+
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
           role: 'assistant',
-          text: `⚠️ **Servidor API de Producción en preparación**\n\nLa interfaz web está activa en Firebase. Para conectar las respuestas de Inteligencia Artificial Gemini en vivo:\n\n1. Inicia el servidor localmente en tu terminal ejecutando: \`python api_server.py\`\n2. O despliega el servicio backend en Render.com usando el archivo \`render.yaml\` del repositorio.\n\n*Recuerda que los navegadores bloquean llamadas desde webs HTTPS a localhost HTTP por motivos de seguridad.*`
+          text: errorMsg
         }
       ]);
     } finally {

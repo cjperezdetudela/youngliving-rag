@@ -56,9 +56,9 @@ class GeminiAdvisorGenerator:
     y sin símbolos '---', '####' ni asteriscos '*'.
     """
 
-    DEFAULT_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+    DEFAULT_MODELS = ["gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.0-flash", "gemini-2.5-flash"]
 
-    def __init__(self, api_key: str = None, preferred_model: str = "gemini-2.5-flash"):
+    def __init__(self, api_key: str = None, preferred_model: str = "gemini-flash-latest"):
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
         self.preferred_model = preferred_model
         self.client = None
@@ -124,7 +124,7 @@ class GeminiAdvisorGenerator:
                 "Sin usar asteriscos '*', guiones '---' ni almohadillas '#' y finalizando SIEMPRE con '¿Te puedo ayudar en algo más?'."
             )
 
-            for model_name in [self.preferred_model] + [m for m in self.DEFAULTMODELS if m != self.preferred_model]:
+            for model_name in [self.preferred_model] + [m for m in self.DEFAULT_MODELS if m != self.preferred_model]:
                 try:
                     response = self.client.models.generate_content(
                         model=model_name,

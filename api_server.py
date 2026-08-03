@@ -63,7 +63,8 @@ def chat():
     response_payload = gemini_generator.generate(pipeline_output, history=history)
 
     # 3. Attach matched structured product cards for interactive UI
-    response_payload["products"] = []
+    docs = pipeline_output.get("documents", [])
+    response_payload["products"] = extract_matched_products(docs)
 
     return jsonify(response_payload)
 

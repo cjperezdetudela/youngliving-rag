@@ -1,3 +1,6 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL !== undefined 
   ? import.meta.env.VITE_API_URL 
-  : 'http://localhost:5000';
+  : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:5000'
+      : 'https://youngliving-rag.onrender.com');
+
