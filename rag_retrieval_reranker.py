@@ -273,15 +273,34 @@ class PrioritizedReranker:
         primary_source = route_info.get("primary_source", "")
         
         if target_intent == "SAFETY_FALLBACK":
-            return [{
-                "source": "Parche_prompt_router_YoungLiving_v0.3.txt",
+            safety_doc_content = (
+                "DIRECTIVAS Y PRECAUCIONES DE SEGURIDAD EN AROMATERAPIA:\n\n"
+                "1. EMBARAZO Y LACTANCIA:\n"
+                "• Consultar siempre con el médico u obstetra antes de usar cualquier aceite esencial.\n"
+                "• Aceites que se deben evitar en el embarazo (especialmente 1er trimestre o por riesgo uterotónico/neurotóxico): Salvia Esclarea, Canela, Clavo, Orégano, Romero, Ruta, Hinojo.\n"
+                "• Aceites de uso seguro bien diluidos en aceite vegetal V-6 (2º y 3er trimestre): Lavanda, Manzanilla, Incienso, Limón.\n"
+                "• Difusión: Usar en sesiones cortas (15-20 minutos) en habitaciones bien ventiladas.\n\n"
+                "2. BEBÉS Y NIÑOS PEQUEÑOS:\n"
+                "• Bebés menores de 3 meses: NO aplicar en la piel ni difundir de forma directa.\n"
+                "• Bebés de 3 a 24 meses: Difusión muy suave (1-2 gotas) lejos de la cuna del bebé. Nunca aplicar puros.\n"
+                "• Niños de 2 a 6 años: Dilución extrema (1 gota de aceite suave en 10-15 ml de aceite vegetal V-6). Evitar aceites con alto mentol o 1,8-cineol (Menta, Eucalipto, Romero) cerca de la cara o vías respiratorias para evitar espasmos.\n\n"
+                "3. INGESTA Y CONTACTO OCULAR:\n"
+                "• Nunca ingerir aceites esenciales puros ni aplicarlos directamente en ojos, oídos ni mucosas.\n"
+                "• En caso de contacto accidental con ojos o piel irritada, limpiar inmediatamente con aceite vegetal V-6 u oliva (NUNCA con agua)."
+            )
+            safety_doc = {
+                "source": "Guia_Oficial_Seguridad_Aromaterapia.txt",
                 "priority": 0,
-                "content_type": "PROMPT_RULES_PATCH",
-                "title": "Aviso y Regla de Seguridad Médica / Ingesta / Sensibilidad",
-                "content": self.loader.prompt_rules,
+                "content_type": "SAFETY_GROUND_TRUTH",
+                "title": "Directivas y Precauciones de Seguridad para Embarazadas, Bebés e Ingesta",
+                "content": safety_doc_content,
                 "rerank_score": 1.0,
-                "rationale": "Intercepción prioritaria por regla de seguridad de salud."
-            }]
+                "rationale": "Directiva oficial de seguridad médica e infantil."
+            }
+            # Include top RAG candidates if any match
+            other_cands = [c for c in candidates if c.get("similarity_score", 0) > 0.1][:2]
+            return [safety_doc] + other_cands
+
 
         allowed_targets = self.intent_source_map.get(target_intent, [])
 

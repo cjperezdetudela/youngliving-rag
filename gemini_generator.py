@@ -138,7 +138,8 @@ class GeminiAdvisorGenerator:
                         config=types.GenerateContentConfig(
                             system_instruction=sys_instruction,
                             temperature=0.3,
-                            max_output_tokens=900,
+                            max_output_tokens=3000,
+
                         )
                     )
                     if response and response.text:
@@ -161,8 +162,27 @@ class GeminiAdvisorGenerator:
     def _generate_fallback_response(self, query: str, route_info: Dict[str, Any], docs: List[Dict[str, Any]], citations: List[str], is_safety: bool, history: List[Dict[str, Any]] = None) -> Dict[str, Any]:
         query_lower = query.lower()
 
+        # Respuesta de seguridad específica para Embarazo, Lactancia, Bebés e Ingesta
+        if is_safety or any(k in query_lower for k in ["embaraz", "bebe", "bebé", "lactanc", "recien nacido", "seguridad"]):
+            text = (
+                "Es una excelente consulta. Cuando hablamos de embarazadas, lactancia y bebés, la seguridad y la precaución deben ser siempre nuestra máxima prioridad.\n\n"
+                "1. PRECAUCIONES EN EMBARAZO Y LACTANCIA:\n"
+                "• Consulta previa: Consulta siempre con tu médico u obstetra antes de incorporar cualquier aceite esencial a tu rutina.\n"
+                "• Aceites a EVITAR: Salvia Esclarea, Canela, Clavo, Orégano, Romero, Ruta e Hinojo (por riesgo de estimular contracciones o neurotoxicidad).\n"
+                "• Aceites seguros (2º y 3er trimestre): Lavanda, Manzanilla, Incienso y Limón, siempre extremadamente diluidos en aceite vegetal V-6 o Jojoba.\n"
+                "• Uso en difusor: Máximo 15-20 minutos en estancias bien ventiladas.\n\n"
+                "2. PRECAUCIONES EN BEBÉS Y NIÑOS PEQUEÑOS:\n"
+                "• Bebés de 0 a 3 meses: Evitar cualquier uso cutáneo o difusión directa.\n"
+                "• Bebés de 3 a 24 meses: Difusión ultra suave (1 gota) fuera del área inmediata de descanso. Nunca aplicar aceites puros sobre su piel.\n"
+                "• Niños de 2 a 6 años: Dilución extrema (1 sola gota de Lavanda o Manzanilla en 15 ml de aceite vegetal V-6). Evitar menta, eucalipto y romero cerca del rostro para proteger sus vías respiratorias.\n\n"
+                "3. INGESTA Y CONTACTO OCULAR:\n"
+                "• Nunca ingerir aceites esenciales puros ni aplicarlos directamente en los ojos ni mucosas.\n"
+                "• En caso de irritación accidental, limpia la zona con aceite vegetal V-6 o de oliva, NUNCA con agua."
+            )
+
         # Aclaración específica sobre Aceite de Limón en el rostro antes de dormir / sebo
-        if "limon" in query_lower or "limón" in query_lower:
+        elif "limon" in query_lower or "limón" in query_lower:
+
             text = (
                 "¡Perfecto! Respecto a tu duda concreta sobre usar el aceite esencial de Limón en el rostro antes de dormir para regular el sebo:\n\n"
                 "1. ¿Se puede aplicar por la noche?\n"
