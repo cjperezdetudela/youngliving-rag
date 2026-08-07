@@ -24,6 +24,12 @@ def sanitize_text(text: str) -> str:
     text = re.sub(r'&\w+;', '', text)
     text = text.replace("&quot;", '"').replace("&amp;", '&').replace("&lt;", '<').replace("&gt;", '>')
     
+    # Remove internal LLM meta-reasoning / chain-of-thought leakage lines
+    text = re.sub(r'(?i)^\s*(No\s+[`\'"]*.*?\s+anywhere\??|Need to carefully.*|Let\'s check.*|Zero\s*$|Checking constraints.*|Inspect text.*).*$', '', text, flags=re.MULTILINE)
+    text = re.sub(r'(?i)\(Need to carefully inspect.*?\)', '', text)
+    text = re.sub(r'(?i)No\s+[`\'"]*.*?\s+anywhere\??', '', text)
+    text = re.sub(r'(?i)Let\'s check every single character.*?', '', text)
+
     # Remove markdown line separators '---' or '***'
     text = re.sub(r'^\s*[-*_]{3,}\s*$', '', text, flags=re.MULTILINE)
     
@@ -80,12 +86,12 @@ class GeminiAdvisorGenerator:
         instruction = (
             "Eres un Asesor Humano, Empático, Cercano y Experto en Aceites Esenciales, Aromaterapia y Cuidado de la Salud de Young Living y Essenciales.\n"
             "Tu objetivo es comunicarte como una persona cercana, transparente, rigurosa y conversacional.\n\n"
-            "REGLAS OBLIGATORIAS DE INTERLOCUCIÓN Y ESTILO:\n"
-            "1. RESPUESTA DIRECTA A ACLARACIONES (SIN REPETIRSE): Si el usuario realiza una pregunta concreta de aclaración o sobre un aceite específico (por ejemplo: usar aceite de limón antes de dormir en la cara), responde DIRECTAMENTE a esa duda puntual aislada de forma natural, sin repetir la plantilla previa ni volver a volcar largas listas genéricas.\n"
-            "2. SÍMBOLOS STRICTAMENTE PROHIBIDOS: No utilices NUNCA el separador '---', encabezados con '#' ni ASTERISCOS '*'. Está prohibido usar asteriscos para negritas o cursivas. Usa texto plano sin asteriscos, saltos de línea y listas con viñetas limpias usando únicamente '•'.\n"
-            "3. FRANQUEZA TOTAL Y SINCERIDAD: Sé transparente respecto al alcance de los aceites esenciales (los aceites son complementos cosméticos/botánicos pero no sustituyen un tratamiento médico prescrito).\n"
+            "REGLAS OBLIGATORIAS DE ESTILO Y FORMATO:\n"
+            "1. RESPUESTA DIRECTA A ACLARACIONES: Si el usuario realiza una pregunta concreta o aclaración sobre un aceite específico, responde DIRECTAMENTE a esa duda puntual aislada de forma natural en español, sin repetir plantillas previas ni volcar largas listas genéricas.\n"
+            "2. FORMATO LIMPIO SIN MARKDOWN COMPLEJO: Escribe la respuesta exclusivamente en texto plano utilizando viñetas limpias con '•' para listas y saltos de línea legibles. No utilices asteriscos (*), encabezados (#) ni guiones (---).\n"
+            "3. FRANQUEZA TOTAL Y SINCERIDAD: Sé transparente respecto al alcance de los aceites esenciales (son complementos botánicos pero no sustituyen un tratamiento médico prescrito).\n"
             "4. RECETAS DE APLICACIÓN CONCRETAS: Cuando se soliciten recetas, incluye proporciones de dilución en aceite vegetal (V-6, Jojoba), modo de aplicación y advertencias (ej. fotosensibilidad).\n"
-            "5. NO USAR CARTELES O BANNERS ROBÓTICOS DE SEGURIDAD.\n"
+            "5. SIN METANOTAS NI COMENTARIOS INTERNOS: Emite ÚNICAMENTE la respuesta final en español al usuario. Está estrictamente prohibido incluir pensamientos internos, reflexiones en inglés o notas de verificación de reglas.\n"
             "6. CIERRE OBLIGATORIO: Finaliza tu respuesta SIEMPRE con la pregunta de cierre exacta: '¿Te puedo ayudar en algo más?'\n"
         )
         return instruction
@@ -120,9 +126,9 @@ class GeminiAdvisorGenerator:
                 f"{history_context}"
                 f"NUEVA CONSULTA CONCRETA DEL USUARIO: {query}\n\n"
                 f"CONTEXTO RECUPERADO DE LA BASE DE DATOS:\n{retrieved_context}\n\n"
-                "Responde directamente a la nueva consulta aislada sin repetir explicaciones anteriores. "
-                "Sin usar asteriscos '*', guiones '---' ni almohadillas '#' y finalizando SIEMPRE con '¿Te puedo ayudar en algo más?'."
+                "Responde directamente a la consulta en español en texto plano con viñetas '•', sin metacomentarios internos y finalizando con '¿Te puedo ayudar en algo más?'."
             )
+
 
             for model_name in [self.preferred_model] + [m for m in self.DEFAULT_MODELS if m != self.preferred_model]:
                 try:
