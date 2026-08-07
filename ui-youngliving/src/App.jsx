@@ -90,7 +90,7 @@ function App() {
     setIsLoading(true);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/chat`, {

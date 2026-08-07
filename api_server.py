@@ -10,7 +10,17 @@ from rag_retrieval_reranker import YoungLivingRAGPipeline
 from gemini_generator import GeminiAdvisorGenerator
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({
+        "service": "Young Living RAG API Server",
+        "status": "online",
+        "health": "/api/status",
+        "docs": "Endpoints available: /api/chat, /api/catalog, /api/status"
+    })
+
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 _pipeline = None

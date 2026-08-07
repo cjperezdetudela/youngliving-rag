@@ -1,12 +1,14 @@
 services:
   - type: web
-    name: youngliving-rag-api
+    name: youngliving-rag
     env: python
     region: oregon
-    buildCommand: python -m pip install --upgrade pip setuptools wheel && pip install --prefer-binary --no-cache-dir -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 api_server:app
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 120 api_server:app
+    healthCheckPath: /api/status
     envVars:
       - key: GEMINI_MODEL
         value: gemini-flash-latest
       - key: GEMINI_API_KEY
         sync: false
+
